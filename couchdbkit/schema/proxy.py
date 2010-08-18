@@ -63,7 +63,19 @@ class DBProxy(object):
         cls._allow_dynamic_properties = dynamic_properties
         return db.get(docid, rev=rev, wrapper=cls.wrap)
 
-    def view(self, dbname, cls, view, wrap_doc=True, dynamic_properties=True):
+    def delete(self, dbname, doc):
+        db = self._entries[dbname]
+        if doc.new_document:
+            raise TypeError("the document is not saved")
+
+        db.delete_doc(doc._id)
+
+        # reinit document
+        del doc._doc['_id']
+        del doc._doc['_rev']
+
+    def view(self, dbname, cls, view, wrap_doc=True, dynamic_properties=True,
+             **params):
         def default_wrapper(row):
             data = row.get('value')
             docid = row.get('id')
@@ -83,7 +95,7 @@ class DBProxy(object):
                 return cls.wrap(data)
 
         db = self._entries[dbname]
-        return db.view(view, wrapper=default_wrapper)
+        return db.view(view, wrapper=default_wrapper, **params)
 
     def save(self, dbname, doc):
         """Saves a document to the given database"""
