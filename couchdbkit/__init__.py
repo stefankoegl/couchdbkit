@@ -24,7 +24,7 @@ DecimalProperty, BooleanProperty, FloatProperty, DateTimeProperty,\
 DateProperty, TimeProperty, dict_to_json, dict_to_json, dict_to_json,\
 value_to_python, dict_to_python, DocumentSchema, DocumentBase, Document,\
 StaticDocument, QueryMixin, AttachmentMixin, SchemaProperty, SchemaListProperty,\
-ListProperty, DictProperty, StringListProperty, contain, StringProperty
+ListProperty, DictProperty, StringListProperty, contain, StringProperty, DBProxy
 
 except ImportError:
     import traceback
