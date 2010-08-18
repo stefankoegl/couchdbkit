@@ -1246,6 +1246,15 @@ class DBProxyTestCase(unittest.TestCase):
         self.assertRaises(TypeError, proxy.add_db, 'customer_1', 'blah')
         self.assertRaises(TypeError, proxy.add_db, 'customer_1', 123)
 
+    def testDeleteDb(self):
+        proxy = DBProxy(customer_1=self.db1)
+        self.assert_('customer_1' in proxy)
+        proxy.delete_db('customer_1')
+
+        proxy.add_db('customer_2', self.db2)
+        self.assert_('customer_2' in proxy)
+        self.assertEquals(proxy.get_db('customer_2'), self.db2)
+
     def testSave(self):
         class MyDoc(Document):
             s = StringProperty()

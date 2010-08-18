@@ -32,6 +32,10 @@ class DBProxy(object):
             raise TypeError("Db must be a database")
         self._entries[dbname] = db
 
+    def delete_db(self, dbname):
+        """Deletes the database name from the proxy."""
+        del self._entries[dbname]
+
     def delete_attachment(self, dbname, doc, name):
         """Deletes an attachment with a given name"""
         db = self._entries[dbname]
