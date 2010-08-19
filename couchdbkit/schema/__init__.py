@@ -138,7 +138,6 @@ of the CouchDB value type has a corresponding Property class provided by the
 
 from couchdbkit.schema.properties import *
 from couchdbkit.schema.base import *
-from couchdbkit.schema.proxy import DBProxy
 from couchdbkit.schema.properties_proxy import *
 
 def contain(db, *docs):

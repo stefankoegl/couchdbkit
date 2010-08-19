@@ -18,13 +18,13 @@ DocsPathNotFound, BulkSaveError
     from couchdbkit.consumer import Consumer
     from couchdbkit.external import External
     from couchdbkit.loaders import BaseDocsLoader, FileSystemDocsLoader
-    
+    from couchdbkit.proxy import DBProxy
     from couchdbkit.schema import Property, Property, IntegerProperty,\
 DecimalProperty, BooleanProperty, FloatProperty, DateTimeProperty,\
 DateProperty, TimeProperty, dict_to_json, dict_to_json, dict_to_json,\
 value_to_python, dict_to_python, DocumentSchema, DocumentBase, Document,\
 StaticDocument, QueryMixin, AttachmentMixin, SchemaProperty, SchemaListProperty,\
-ListProperty, DictProperty, StringListProperty, contain, StringProperty, DBProxy
+ListProperty, DictProperty, StringListProperty, contain, StringProperty
 
 except ImportError:
     import traceback
