@@ -17,7 +17,7 @@ setup(
     version = __version__,
 
     description = 'Python couchdb kit',
-    long_description = file(
+    long_description = open(
         os.path.join(
             os.path.dirname(__file__),
             'README.rst'
