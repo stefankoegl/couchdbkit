@@ -1767,7 +1767,7 @@ class SetPropertyTestCase(unittest.TestCase):
         self.assertEqual(a._doc, {'doc_type': 'A', 's': []})
         b = B()
         self.assertEqual(b._doc['doc_type'], 'B')
-        self.assertItemsEqual(b._doc['s'], [42, 24])
+        self.assertEqual(sorted(b._doc['s']), [24, 42])
         with self.assertRaises(ValueError) as cm:
             class C(Document):
                 s = SetProperty(item_type=tuple)
@@ -1784,7 +1784,7 @@ class SetPropertyTestCase(unittest.TestCase):
         a = A()
         a.s = set(('foo', 'bar'))
         self.assertEqual(a.s, set(('foo', 'bar')))
-        self.assertItemsEqual(a._doc['s'], ['foo', 'bar'])
+        self.assertEqual(sorted(a._doc['s']), ['bar', 'foo'])
         self.assertEqual(len(a.s), 2)
         self.assertEqual(len(a._doc['s']), 2)
         self.assertIn('foo', a.s)
@@ -1804,7 +1804,7 @@ class SetPropertyTestCase(unittest.TestCase):
         a = A()
         a.s = set((d1, ))
         self.assertEqual(a.s, set((d1, )))
-        self.assertItemsEqual(a._doc['s'], ['2011-03-15T17:08:01Z'])
+        self.assertEqual(a._doc['s'], ['2011-03-15T17:08:01Z'])
         self.assertEqual(len(a.s), 1)
         self.assertEqual(len(a._doc['s']), 1)
         self.assertIn(d1, a.s)
@@ -1902,23 +1902,23 @@ class SetPropertyTestCase(unittest.TestCase):
         a.s = set(iter1)
         a.s.update(iter1)
         self.assertEqual(a.s, set(('foo', 'bar')))
-        self.assertItemsEqual(a._doc['s'], ['foo', 'bar'])
+        self.assertEqual(sorted(a._doc['s']), ['bar', 'foo'])
         a.s = set(iter1)
         a.s.update(iter2)
         self.assertEqual(a.s, set(('foo', 'bar', 'baz')))
-        self.assertItemsEqual(a._doc['s'], ['foo', 'bar', 'baz'])
+        self.assertEqual(sorted(a._doc['s']), ['bar', 'baz', 'foo'])
         a.s = set(iter1)
         a.s.update(iter2, iter3)
         self.assertEqual(a.s, set(('foo', 'bar', 'baz', 'fiz')))
-        self.assertItemsEqual(a._doc['s'], ['foo', 'bar', 'baz', 'fiz'])
+        self.assertEqual(sorted(a._doc['s']), ['bar', 'baz', 'fiz', 'foo'])
         a.s = set(iter1)
         a.s |= set(iter2)
         self.assertEqual(a.s, set(('foo', 'bar', 'baz')))
-        self.assertItemsEqual(a._doc['s'], ['foo', 'bar', 'baz'])
+        self.assertEqual(sorted(a._doc['s']), ['bar', 'baz', 'foo'])
         a.s = set(iter1)
         a.s |= set(iter2) | set(iter3)
         self.assertEqual(a.s, set(('foo', 'bar', 'baz', 'fiz')))
-        self.assertItemsEqual(a._doc['s'], ['foo', 'bar', 'baz', 'fiz'])
+        self.assertEqual(sorted(a._doc['s']), ['bar', 'baz', 'fiz', 'foo'])
 
 
     def testSetPropertyIntersectionUpdate(self):
@@ -1934,23 +1934,23 @@ class SetPropertyTestCase(unittest.TestCase):
         a.s = set(iter1)
         a.s.intersection_update(iter1)
         self.assertEqual(a.s, set(('foo', 'baz')))
-        self.assertItemsEqual(a._doc['s'], ['foo', 'baz'])
+        self.assertEqual(sorted(a._doc['s']), ['baz', 'foo'])
         a.s = set(iter1)
         a.s.intersection_update(iter2)
         self.assertEqual(a.s, set(('baz', )))
-        self.assertItemsEqual(a._doc['s'], ['baz'])
+        self.assertEqual(a._doc['s'], ['baz'])
         a.s = set(iter1)
         a.s.intersection_update(iter2, iter3)
         self.assertEqual(a.s, set())
-        self.assertItemsEqual(a._doc['s'], [])
+        self.assertEqual(a._doc['s'], [])
         a.s = set(iter1)
         a.s &= set(iter2)
         self.assertEqual(a.s, set(('baz', )))
-        self.assertItemsEqual(a._doc['s'], ['baz'])
+        self.assertEqual(a._doc['s'], ['baz'])
         a.s = set(iter1)
         a.s &= set(iter2) & set(iter3)
         self.assertEqual(a.s, set())
-        self.assertItemsEqual(a._doc['s'], [])
+        self.assertEqual(a._doc['s'], [])
 
 
     def testSetPropertyDifferenceUpdate(self):
@@ -1970,11 +1970,11 @@ class SetPropertyTestCase(unittest.TestCase):
         a.s = set(iter1)
         a.s.difference_update(iter2)
         self.assertEqual(a.s, set(('foo', 'fiz')))
-        self.assertItemsEqual(a._doc['s'], ['foo', 'fiz'])
+        self.assertEqual(sorted(a._doc['s']), ['fiz', 'foo'])
         a.s = set(iter1)
         a.s.difference_update(iter2, iter3)
         self.assertEqual(a.s, set(('foo', )))
-        self.assertItemsEqual(a._doc['s'], ['foo'])
+        self.assertEqual(a._doc['s'], ['foo'])
         a.s = set(iter1)
         a.s -= set(iter1)
         self.assertEqual(a.s, set())
@@ -1982,11 +1982,11 @@ class SetPropertyTestCase(unittest.TestCase):
         a.s = set(iter1)
         a.s -= set(iter2)
         self.assertEqual(a.s, set(('foo', 'fiz')))
-        self.assertItemsEqual(a._doc['s'], ['foo', 'fiz'])
+        self.assertEqual(sorted(a._doc['s']), ['fiz', 'foo'])
         a.s = set(iter1)
         a.s -= set(iter2) | set(iter3)
         self.assertEqual(a.s, set(('foo', )))
-        self.assertItemsEqual(a._doc['s'], ['foo'])
+        self.assertEqual(a._doc['s'], ['foo'])
 
 
     def testSetPropertySymmetricDifferenceUpdate(self):
@@ -2005,7 +2005,7 @@ class SetPropertyTestCase(unittest.TestCase):
         a.s = set(iter1)
         a.s.symmetric_difference_update(iter2)
         self.assertEqual(a.s, set(('foo', 'bar', 'fiz')))
-        self.assertItemsEqual(a._doc['s'], ['foo', 'bar', 'fiz'])
+        self.assertEqual(sorted(a._doc['s']), ['bar', 'fiz', 'foo'])
         a.s = set(iter1)
         a.s ^= set(iter1)
         self.assertEqual(a.s, set())
@@ -2013,7 +2013,7 @@ class SetPropertyTestCase(unittest.TestCase):
         a.s = set(iter1)
         a.s ^= set(iter2)
         self.assertEqual(a.s, set(('foo', 'bar', 'fiz')))
-        self.assertItemsEqual(a._doc['s'], ['foo', 'bar', 'fiz'])
+        self.assertEqual(sorted(a._doc['s']), ['bar', 'fiz', 'foo'])
 
 
     def testSetPropertyAdd(self):
@@ -2026,10 +2026,10 @@ class SetPropertyTestCase(unittest.TestCase):
         a.s = set(('foo', 'bar'))
         a.s.add('bar')
         self.assertEqual(a.s, set(('foo', 'bar')))
-        self.assertItemsEqual(a._doc['s'], ['foo', 'bar'])
+        self.assertEqual(sorted(a._doc['s']), ['bar', 'foo'])
         a.s.add('baz')
         self.assertEqual(a.s, set(('foo', 'bar', 'baz')))
-        self.assertItemsEqual(a._doc['s'], ['foo', 'bar', 'baz'])
+        self.assertEqual(sorted(a._doc['s']), ['bar', 'baz', 'foo'])
 
 
     def testSetPropertyRemove(self):
@@ -2042,7 +2042,7 @@ class SetPropertyTestCase(unittest.TestCase):
         a.s = set(('foo', 'bar'))
         a.s.remove('foo')
         self.assertEqual(a.s, set(('bar', )))
-        self.assertItemsEqual(a._doc['s'], ['bar'])
+        self.assertEqual(a._doc['s'], ['bar'])
         with self.assertRaises(KeyError):
             a.s.remove('foo')
 
@@ -2057,10 +2057,10 @@ class SetPropertyTestCase(unittest.TestCase):
         a.s = set(('foo', 'bar'))
         a.s.discard('foo')
         self.assertEqual(a.s, set(('bar', )))
-        self.assertItemsEqual(a._doc['s'], ['bar'])
+        self.assertEqual(a._doc['s'], ['bar'])
         a.s.discard('foo')
         self.assertEqual(a.s, set(('bar', )))
-        self.assertItemsEqual(a._doc['s'], ['bar'])
+        self.assertEqual(a._doc['s'], ['bar'])
 
 
     def testSetPropertyPop(self):
