@@ -3,7 +3,7 @@
 # This file is part of couchdbkit released under the MIT license. 
 # See the NOTICE for more information.
 
-from __future__ import with_statement
+
 
 from .base import ConsumerBase, check_callable
 from ..utils import json

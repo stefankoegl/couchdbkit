@@ -18,7 +18,7 @@ CouchDB. Second allow you to send only one design doc.
 This module is here for compatibility reason and will be removed in 0.6.
 It's replaced by couchdbkit.designer module and push* functions.
 """
-from __future__ import with_statement
+
 
 from .designer import document, push, pushapps, pushdocs
 
@@ -46,13 +46,13 @@ class FileSystemDocsLoader(BaseDocsLoader):
     """
 
     def __init__(self, designpath, docpath=None):
-        if isinstance(designpath, basestring):
+        if isinstance(designpath, str):
             self.designpaths = [designpath]
         else:
             self.designpaths = designpath
 
         docpath = docpath or []
-        if isinstance(docpath, basestring):
+        if isinstance(docpath, str):
             docpath = [docpath]
         self.docpaths = docpath            
         

@@ -4,9 +4,9 @@
 # See the NOTICE for more information.
 
 import sys
-import StringIO
+import io
 import traceback
-from urllib import unquote
+from urllib.parse import unquote
 
 from restkit.util import url_encode
 
@@ -32,10 +32,10 @@ class WSGIRequest(object):
         length = headers.get("CONTENT_LENGTH")
         if self.line["body"] and self.line["body"] != "undefined":
             length = len(self.line["body"])
-            body = StringIO.StringIO(self.line["body"])
+            body = io.StringIO(self.line["body"])
             
         else:
-            body = StringIO.StringIO()
+            body = io.StringIO()
             
         # path
         script_name, path_info = self.line['path'][:2],  self.line['path'][2:]
@@ -48,7 +48,7 @@ class WSGIRequest(object):
         # build query string
         args = []
         query_string = None
-        for k, v in self.line["query"].items():
+        for k, v in list(self.line["query"].items()):
             if v is None:
                 continue
             else:
@@ -67,7 +67,7 @@ class WSGIRequest(object):
         environ = {
             "wsgi.url_scheme": 'http',
             "wsgi.input": body,
-            "wsgi.errors": StringIO.StringIO(),
+            "wsgi.errors": io.StringIO(),
             "wsgi.version": (1, 0),
             "wsgi.multithread": False,
             "wsgi.multiprocess": True,
@@ -89,7 +89,7 @@ class WSGIRequest(object):
             "SERVER_PROTOCOL": "HTTP/1.1"
         }
         
-        for key, value in headers.items():
+        for key, value in list(headers.items()):
             key = 'HTTP_' + key.replace('-', '_')
             if key not in ('HTTP_CONTENT_TYPE', 'HTTP_CONTENT_LENGTH'):
                 environ[key] = value
@@ -105,7 +105,7 @@ class WSGIRequest(object):
                 
     def parse_headers(self):
         headers = {}
-        for name, value in self.line.get("headers", {}).items():
+        for name, value in list(self.line.get("headers", {}).items()):
             name = name.strip().upper().encode("utf-8")
             headers[name] = value.strip().encode("utf-8")
         return headers

@@ -110,7 +110,7 @@ def document_to_dict(instance, properties=None, exclude=None):
     """
     # avoid a circular import
     data = {}
-    for prop_name in instance._doc.keys():
+    for prop_name in list(instance._doc.keys()):
         if properties and not prop_name in properties:
             continue
         if exclude and prop_name in exclude:
@@ -136,7 +136,7 @@ def fields_for_document(document, properties=None, exclude=None):
         values = [document._properties[prop] for prop in properties if \
                                                 prop in document._properties]
     else:
-        values = document._properties.values()
+        values = list(document._properties.values())
         values.sort(lambda a, b: cmp(a.creation_counter, b.creation_counter))
     
     for prop in values: 
@@ -240,7 +240,7 @@ class BaseDocumentForm(BaseForm):
         
         opts = self._meta
         cleaned_data = self.cleaned_data.copy()
-        for prop_name in self.instance._doc.keys():
+        for prop_name in list(self.instance._doc.keys()):
             if opts.properties and prop_name not in opts.properties:
                 continue
             if opts.exclude and prop_name in opts.exclude:
@@ -251,7 +251,7 @@ class BaseDocumentForm(BaseForm):
                     setattr(self.instance, prop_name, value)
             
         if dynamic:
-            for attr_name in cleaned_data.keys():
+            for attr_name in list(cleaned_data.keys()):
                 if opts.exclude and attr_name in opts.exclude:
                     continue
                 value = cleaned_data[attr_name]
@@ -263,6 +263,5 @@ class BaseDocumentForm(BaseForm):
         
         return self.instance
             
-class DocumentForm(BaseDocumentForm):
+class DocumentForm(BaseDocumentForm, metaclass=DocumentFormMetaClass):
     """ The document form object """
-    __metaclass__ = DocumentFormMetaClass          

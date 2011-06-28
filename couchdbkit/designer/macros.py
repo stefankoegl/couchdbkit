@@ -47,13 +47,13 @@ def package_shows(doc, funcs, app_dir, objs):
    apply_lib(doc, funcs, app_dir, objs)
          
 def package_views(doc, views, app_dir, objs):
-   for view, funcs in views.iteritems():
+   for view, funcs in views.items():
        if hasattr(funcs, "items"):
            apply_lib(doc, funcs, app_dir, objs)
 
 def apply_lib(doc, funcs, app_dir, objs):
-    for k, v in funcs.items():
-        if not isinstance(v, basestring):
+    for k, v in list(funcs.items()):
+        if not isinstance(v, str):
             continue
         else:
             logger.debug("process function: %s" % k)
@@ -61,7 +61,7 @@ def apply_lib(doc, funcs, app_dir, objs):
             try:
                 funcs[k] = run_json_macros(doc, 
                     run_code_macros(v, app_dir), app_dir)
-            except ValueError, e:
+            except ValueError as e:
                 raise MacroError(
                 "Error running !code or !json on function \"%s\": %s" % (k, e))
             if old_v != funcs[k]:
@@ -80,7 +80,7 @@ def run_code_macros(f_string, app_dir):
                if cnt.find("!code") >= 0:
                    cnt = run_code_macros(cnt, app_dir)
                library += cnt
-           except IOError, e:
+           except IOError as e:
                raise MacroError(str(e))
            filenum += 1
            
@@ -109,7 +109,7 @@ def run_json_macros(doc, f_string, app_dir):
                        library = read_json(filename)
                    else:
                        library = read_file(filename)
-               except IOError, e:
+               except IOError as e:
                    raise MacroError(str(e))
                filenum += 1
                current_file = filename.split(app_dir)[1]
@@ -154,7 +154,7 @@ def run_json_macros(doc, f_string, app_dir):
    if not included:
        return f_string
 
-   for k, v in included.iteritems():
+   for k, v in included.items():
        varstrings.append("var %s = %s;" % (k, json.dumps(v).encode('utf-8')))
 
    return re_json.sub(rjson2, f_string)

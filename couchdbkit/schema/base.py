@@ -14,6 +14,7 @@ convert_property, MAP_TYPES_PROPERTIES, ALLOWED_PROPERTY_TYPES, \
 LazyDict, LazyList
 from ..exceptions import DuplicatePropertyError, ResourceNotFound, \
 ReservedWordError 
+import collections
 
 
 __all__ = ['ReservedWordError', 'ALLOWED_PROPERTY_TYPES', 'DocumentSchema',
@@ -31,7 +32,7 @@ def check_reserved_words(attr_name):
             locals())
 
 def valid_id(value):
-    if isinstance(value, basestring) and not value.startswith('_'):
+    if isinstance(value, str) and not value.startswith('_'):
         return value
     raise TypeError('id "%s" is invalid' % value)
 
@@ -43,7 +44,7 @@ class SchemaProperties(type):
         defined = set()
         for base in bases:
             if hasattr(base, '_properties'):
-                property_keys = base._properties.keys()
+                property_keys = list(base._properties.keys())
                 duplicate_properties = defined.intersection(property_keys)
                 if duplicate_properties:
                     raise DuplicatePropertyError(
@@ -59,7 +60,7 @@ class SchemaProperties(type):
 
         attrs['_doc_type'] = doc_type
 
-        for attr_name, attr in attrs.items():
+        for attr_name, attr in list(attrs.items()):
             # map properties
             if isinstance(attr, p.Property):
                 check_reserved_words(attr_name)
@@ -83,9 +84,7 @@ class SchemaProperties(type):
         return type.__new__(cls, name, bases, attrs)
 
 
-class DocumentSchema(object):
-    __metaclass__ = SchemaProperties
-
+class DocumentSchema(object, metaclass=SchemaProperties):
     _dynamic_properties = None
     _allow_dynamic_properties = True
     _doc = None
@@ -103,7 +102,7 @@ class DocumentSchema(object):
         doc_type = getattr(self, '_doc_type', self.__class__.__name__)
         self._doc['doc_type'] = doc_type
         
-        for prop in self._properties.values():
+        for prop in list(self._properties.values()):
             if prop.name in properties:
                 value = properties.pop(prop.name)
                 if value is None:
@@ -114,7 +113,7 @@ class DocumentSchema(object):
             self.__dict__[prop.name] = value
 
         _dynamic_properties = properties.copy()
-        for attr_name, value in _dynamic_properties.iteritems():
+        for attr_name, value in _dynamic_properties.items():
             if attr_name not in self._properties \
                     and value is not None:
                 if isinstance(value, p.Property):
@@ -184,7 +183,7 @@ class DocumentSchema(object):
                     key not in self.properties() and \
                     key not in dir(self):
                 if type(value) not in ALLOWED_PROPERTY_TYPES and \
-                        not isinstance(value, (p.Property,)):
+                        not isinstance(value, p.Property):
                     raise TypeError("Document Schema cannot accept values of type '%s'." %
                             type(value).__name__)
 
@@ -206,10 +205,10 @@ class DocumentSchema(object):
 
                 self._dynamic_properties[key] = value
 
-                if not isinstance(value, (p.Property,)) and \
+                if not isinstance(value, p.Property) and \
                         not isinstance(value, dict) and \
                         not isinstance(value, list):
-                    if callable(value):
+                    if isinstance(value, collections.Callable):
                         value = value()
                     self._doc[key] = convert_property(value)
             else:
@@ -235,7 +234,7 @@ class DocumentSchema(object):
             return self._doc.get(key)
         try:
             return self.__dict__[key]
-        except KeyError, e:
+        except KeyError as e:
             raise AttributeError(e)
 
     def __getitem__(self, key):
@@ -243,7 +242,7 @@ class DocumentSchema(object):
         """
         try:
             attr = getattr(self, key)
-            if callable(attr):
+            if isinstance(attr, collections.Callable):
                 raise AttributeError("existing instance method")
             return attr
         except AttributeError:
@@ -262,8 +261,8 @@ class DocumentSchema(object):
         """
         try:
             delattr(self, key)
-        except AttributeError, e:
-            raise KeyError, e
+        except AttributeError as e:
+            raise KeyError(e)
 
 
     def __contains__(self, key):
@@ -282,7 +281,7 @@ class DocumentSchema(object):
     def __iter__(self):
         """ iter document instance properties
         """
-        for k in self.all_properties().keys():
+        for k in list(self.all_properties().keys()):
             yield k, self[k]
         raise StopIteration
 
@@ -291,7 +290,7 @@ class DocumentSchema(object):
     def items(self):
         """ return list of items
         """
-        return [(k, self[k]) for k in self.all_properties().keys()]
+        return [(k, self[k]) for k in list(self.all_properties().keys())]
 
 
     def __len__(self):
@@ -309,7 +308,7 @@ class DocumentSchema(object):
         """ wrap `data` dict in object properties """
         instance = cls()
         instance._doc = data
-        for prop in instance._properties.values():
+        for prop in list(instance._properties.values()):
             if prop.name in data:
                 value = data[prop.name]
                 if value is not None:
@@ -321,7 +320,7 @@ class DocumentSchema(object):
             prop.__property_init__(instance, value)
 
         if cls._allow_dynamic_properties:
-            for attr_name, value in data.iteritems():
+            for attr_name, value in data.items():
                 if attr_name in instance.properties():
                     continue
                 if value is None:
@@ -338,7 +337,7 @@ class DocumentSchema(object):
 
     def validate(self, required=True):
         """ validate a document """
-        for attr_name, value in self._doc.items():
+        for attr_name, value in list(self._doc.items()):
             if attr_name in self._properties:
                 self._properties[attr_name].validate(
                         getattr(self, attr_name), required=required)
@@ -355,8 +354,8 @@ class DocumentSchema(object):
     def build(cls, **kwargs):
         """ build a new instance from this document object. """
         properties = {}
-        for attr_name, attr in kwargs.items():
-            if isinstance(attr, (p.Property,)):
+        for attr_name, attr in list(kwargs.items()):
+            if isinstance(attr, p.Property):
                 properties[attr_name] = attr
                 attr.__property_config__(cls, attr_name)
             elif type(attr) in MAP_TYPES_PROPERTIES and \
@@ -604,7 +603,7 @@ class QueryMixin(object):
 
         if not wrapper:
             wrapper = None
-        elif not callable(wrapper):
+        elif not isinstance(wrapper, collections.Callable):
             raise TypeError("wrapper is not a callable")
 
         db = cl.get_db()

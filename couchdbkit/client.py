@@ -41,6 +41,7 @@ from .exceptions import InvalidAttachment, NoResultFound, \
 ResourceNotFound, ResourceConflict, BulkSaveError, MultipleResultsFound 
 from . import resource
 from .utils import validate_dbname
+import collections
 
 
 DEFAULT_UUID_BATCH_COUNT = 1000
@@ -218,7 +219,7 @@ class Server(object):
     def __len__(self):
         return len(self.all_dbs())
 
-    def __nonzero__(self):
+    def __bool__(self):
         return (len(self) > 0)
 
     def _db_uri(self, dbname):
@@ -297,7 +298,7 @@ class Database(object):
         except design docs."""
         # save ddocs
         all_ddocs = self.all_docs(startkey="_design",
-                            endkey="_design/"+u"\u9999",
+                            endkey="_design/"+"\u9999",
                             include_docs=True)
         ddocs = []
         for ddoc in all_ddocs:
@@ -352,7 +353,7 @@ class Database(object):
         docid = resource.escape_docid(docid)
         doc = self.res.get(docid, **params).json_body        
         if wrapper is not None:
-            if not callable(wrapper):
+            if not isinstance(wrapper, collections.Callable):
                 raise TypeError("wrapper isn't a callable")
 
             return wrapper(doc)
@@ -568,7 +569,7 @@ class Database(object):
 
             docid = resource.escape_docid(doc1['_id'])
             result = self.res.delete(docid, rev=doc1['_rev'], **params).json_body
-        elif isinstance(doc1, basestring): # we get a docid
+        elif isinstance(doc1, str): # we get a docid
             rev = self.get_rev(doc1)
             docid = resource.escape_docid(doc1)
             result = self.res.delete(docid, rev=rev, **params).json_body
@@ -595,7 +596,7 @@ class Database(object):
             headers = {}
 
         doc1, schema = _maybe_serialize(doc)
-        if isinstance(doc1, basestring):
+        if isinstance(doc1, str):
             docid = doc1
         else:
             if not '_id' in doc1:
@@ -604,7 +605,7 @@ class Database(object):
 
         if dest is None:
             destination = self.server.next_uuid(count=1)
-        elif isinstance(dest, basestring):
+        elif isinstance(dest, str):
             if dest in self:
                 dest = self.get(dest)
                 destination = "%s?rev=%s" % (dest['_id'], dest['_rev'])
@@ -770,7 +771,7 @@ class Database(object):
                 raise InvalidAttachment('You should provide a valid attachment name')
         name = url_quote(name, safe="")
         if content_type is None:
-            content_type = ';'.join(filter(None, guess_type(name)))
+            content_type = ';'.join([_f for _f in guess_type(name) if _f])
 
         if content_type:
             headers['Content-Type'] = content_type
@@ -821,7 +822,7 @@ class Database(object):
         @return: `restkit.httpc.Response` object
         """
 
-        if isinstance(id_or_doc, basestring):
+        if isinstance(id_or_doc, str):
             docid = id_or_doc
         else:
             doc, schema = _maybe_serialize(id_or_doc)
@@ -862,7 +863,7 @@ class Database(object):
     def __iter__(self):
         return self.documents().iterator()
 
-    def __nonzero__(self):
+    def __bool__(self):
         return (len(self) > 0)
 
 class ViewResults(object):
@@ -953,7 +954,7 @@ class ViewResults(object):
 
         # add key in view results that could be added by an external
         # like couchdb-lucene
-        for key in self._result_cache.keys():
+        for key in list(self._result_cache.keys()):
             if key not in ["total_rows", "offset", "rows"]:
                 self._dynamic_keys.append(key)
                 setattr(self, key, self._result_cache[key])
@@ -989,7 +990,7 @@ class ViewResults(object):
                 params['startkey'] = key.start
             if key.stop is not None:
                 params['endkey'] = key.stop
-        elif isinstance(key, (list, tuple,)):
+        elif isinstance(key, (list, tuple)):
             params['keys'] = key
         else:
             params['key'] = key
@@ -1002,7 +1003,7 @@ class ViewResults(object):
     def __len__(self):
         return self.count()
 
-    def __nonzero__(self):
+    def __bool__(self):
         return bool(len(self))
 
 

@@ -3,7 +3,7 @@
 # This file is part of couchdbkit released under the MIT license. 
 # See the NOTICE for more information.
 
-from __future__ import with_statement
+
 import base64
 import copy
 from hashlib import md5
@@ -112,8 +112,7 @@ class FSDoc(object):
             re_sp = re.compile('\s')
             att = {
                     "data": re_sp.sub('',base64.b64encode(f.read())),
-                    "content_type": ';'.join(filter(None, 
-                                            mimetypes.guess_type(name)))
+                    "content_type": ';'.join([_f for _f in mimetypes.guess_type(name) if _f])
             }
 
         return att 
@@ -158,7 +157,7 @@ class FSDoc(object):
                 attachments[name] = self.attachment_stub(name, filepath) 
 
         if old_signatures:
-            for name, signature in old_signatures.items():
+            for name, signature in list(old_signatures.items()):
                 cursign = signatures.get(name)
                 if not cursign:
                     logger.debug("detach %s " % name)
@@ -211,7 +210,7 @@ class FSDoc(object):
                             name = name[:-1]
                         dmanifest[name] = i
             
-                for vname, value in self._doc['views'].iteritems():
+                for vname, value in self._doc['views'].items():
                     if value and isinstance(value, dict):
                         views[vname] = value
                     else:
@@ -425,7 +424,7 @@ def pushapps(path, dbs, atomic=True, export=False, couchapprc=False):
                 docs = [doc.doc(db) for doc in apps]
                 try:
                     db.save_docs(docs)
-                except BulkSaveError, e:
+                except BulkSaveError as e:
                     docs1 = []
                     for doc in e.errors:
                         try:
@@ -490,7 +489,7 @@ def pushdocs(path, dbs, atomic=True, export=False):
                         docs1.append(newdoc)
                 try:
                     db.save_docs(docs1)
-                except BulkSaveError, e:
+                except BulkSaveError as e:
                     # resolve conflicts
                     docs1 = []
                     for doc in e.errors:
@@ -562,7 +561,7 @@ def clone(db, docid, dest=None, rev=None):
                         break
 
 
-                    if isinstance(content, basestring):
+                    if isinstance(content, str):
                         _ref = md5(utils.to_bytestring(content)).hexdigest()
                         if objects and _ref in objects:
                             content = objects[_ref]
@@ -594,7 +593,7 @@ def clone(db, docid, dest=None, rev=None):
     
     # second pass for missing key or in case
     # manifest isn't in app
-    for key in doc.iterkeys():
+    for key in doc.keys():
         if key.startswith('_'): 
             continue
         elif key in ('couchapp'):
@@ -614,11 +613,11 @@ def clone(db, docid, dest=None, rev=None):
             vs_dir = os.path.join(path, key)
             if not os.path.isdir(vs_dir):
                 os.makedirs(vs_dir)
-            for vsname, vs_item in doc[key].iteritems():
+            for vsname, vs_item in doc[key].items():
                 vs_item_dir = os.path.join(vs_dir, vsname)
                 if not os.path.isdir(vs_item_dir):
                     os.makedirs(vs_item_dir)
-                for func_name, func in vs_item.iteritems():
+                for func_name, func in vs_item.items():
                     filename = os.path.join(vs_item_dir, '%s.js' % 
                             func_name)
                     utils.write_content(filename, func)
@@ -627,7 +626,7 @@ def clone(db, docid, dest=None, rev=None):
             showpath = os.path.join(path, key)
             if not os.path.isdir(showpath):
                 os.makedirs(showpath)
-            for func_name, func in doc[key].iteritems():
+            for func_name, func in doc[key].items():
                 filename = os.path.join(showpath, '%s.js' % 
                         func_name)
                 utils.write_content(filename, func)
@@ -639,14 +638,14 @@ def clone(db, docid, dest=None, rev=None):
                 continue
             else:
                 logger.warning("clone property not in manifest: %s" % key)
-                if isinstance(doc[key], (list, tuple,)):
+                if isinstance(doc[key], (list, tuple)):
                     utils.write_json(filedir + ".json", doc[key])
                 elif isinstance(doc[key], dict):
                     if not os.path.isdir(filedir):
                         os.makedirs(filedir)
-                    for field, value in doc[key].iteritems():
+                    for field, value in doc[key].items():
                         fieldpath = os.path.join(filedir, field)
-                        if isinstance(value, basestring):
+                        if isinstance(value, str):
                             if value.startswith('base64-encoded;'):
                                 value = base64.b64decode(content[15:])
                             utils.write_content(fieldpath, value)
@@ -654,7 +653,7 @@ def clone(db, docid, dest=None, rev=None):
                             utils.write_json(fieldpath + '.json', value)        
                 else:
                     value = doc[key]
-                    if not isinstance(value, basestring):
+                    if not isinstance(value, str):
                         value = str(value)
                     utils.write_content(filedir, value)
 
@@ -669,7 +668,7 @@ def clone(db, docid, dest=None, rev=None):
         if not os.path.isdir(attachdir):
             os.makedirs(attachdir)
             
-        for filename in doc['_attachments'].iterkeys():
+        for filename in doc['_attachments'].keys():
             if filename.startswith('vendor'):
                 attach_parts = utils.split_path(filename)
                 vendor_attachdir = os.path.join(path, attach_parts.pop(0),

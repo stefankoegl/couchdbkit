@@ -31,7 +31,7 @@ class ClientServerTestCase(unittest.TestCase):
 
     def testGetInfo(self):
         info = self.Server.info()
-        self.assert_(info.has_key('version'))
+        self.assert_('version' in info)
         
     def testCreateDb(self):
         res = self.Server.create_db('couchdbkit_test')
@@ -79,7 +79,7 @@ class ClientServerTestCase(unittest.TestCase):
         
     def testGetUUIDS(self):
         uuid = self.Server.next_uuid()
-        self.assert_(isinstance(uuid, basestring) == True)
+        self.assert_(isinstance(uuid, str) == True)
         self.assert_(len(self.Server._uuids) == 999)
         uuid2 = self.Server.next_uuid()
         self.assert_(uuid != uuid2)
@@ -376,7 +376,7 @@ class ClientDatabaseTestCase(unittest.TestCase):
         db = self.Server.create_db('couchdbkit_test')
         doc = { 'string': 'test', 'number': 4 }
         db.save_doc(doc)        
-        text_attachment = u"un texte attaché"
+        text_attachment = "un texte attaché"
         old_rev = doc['_rev']
         db.put_attachment(doc, text_attachment, "test", "text/plain")
         self.assert_(old_rev != doc['_rev'])
@@ -388,7 +388,7 @@ class ClientDatabaseTestCase(unittest.TestCase):
         db = self.Server.create_db('couchdbkit_test')
         doc = { 'string': 'test', 'number': 4 }
         db.save_doc(doc)        
-        text_attachment = u"a text attachment"
+        text_attachment = "a text attachment"
         db.put_attachment(doc, text_attachment, "test", "text/plain")
         stream = db.fetch_attachment(doc, "test", stream=True)
         fetch_attachment = stream.read()
@@ -421,7 +421,7 @@ class ClientDatabaseTestCase(unittest.TestCase):
         db = self.Server.create_db('couchdbkit_test')
         doc = { '_id': 'test/slashes', 'string': 'test', 'number': 4 }
         db.save_doc(doc)        
-        text_attachment = u"un texte attaché"
+        text_attachment = "un texte attaché"
         old_rev = doc['_rev']
         db.put_attachment(doc, text_attachment, "test", "text/plain")
         self.assert_(old_rev != doc['_rev'])
@@ -438,9 +438,9 @@ class ClientDatabaseTestCase(unittest.TestCase):
         
     def testAttachmentUnicode8URI(self):
         db = self.Server.create_db('couchdbkit_test')
-        doc = { '_id': u"éàù/slashes", 'string': 'test', 'number': 4 }
+        doc = { '_id': "éàù/slashes", 'string': 'test', 'number': 4 }
         db.save_doc(doc)        
-        text_attachment = u"un texte attaché"
+        text_attachment = "un texte attaché"
         old_rev = doc['_rev']
         db.put_attachment(doc, text_attachment, "test", "text/plain")
         self.assert_(old_rev != doc['_rev'])
@@ -524,7 +524,7 @@ class ClientDatabaseTestCase(unittest.TestCase):
         all_errors = []
         try:
             db.bulk_save(docs2)
-        except BulkSaveError, e:
+        except BulkSaveError as e:
             all_errors = e.errors
 
         self.assert_(len(all_errors) == 2)
@@ -542,7 +542,7 @@ class ClientDatabaseTestCase(unittest.TestCase):
         all_errors2 = []
         try:
             db.bulk_save(docs3, all_or_nothing=True)
-        except BulkSaveError, e:
+        except BulkSaveError as e:
             all_errors2 = e.errors
         
         self.assert_(len(all_errors2) == 0)

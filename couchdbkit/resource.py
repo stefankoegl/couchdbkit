@@ -101,7 +101,7 @@ class CouchdbResource(Resource):
 
         if payload is not None:
             #TODO: handle case we want to put in payload json file.
-            if not hasattr(payload, 'read') and not isinstance(payload, basestring):
+            if not hasattr(payload, 'read') and not isinstance(payload, str):
                 payload = json.dumps(payload).encode('utf-8')
                 headers.setdefault('Content-Type', 'application/json')
 
@@ -110,7 +110,7 @@ class CouchdbResource(Resource):
             resp = Resource.request(self, method, path=path,
                              payload=payload, headers=headers, **params)
                              
-        except ResourceError, e:
+        except ResourceError as e:
             msg = getattr(e, 'msg', '')
             if e.response and msg:
                 if e.response.headers.get('content-type') == 'application/json':
@@ -145,12 +145,12 @@ def encode_params(params):
     """ encode parameters in json if needed """
     _params = {}
     if params:
-        for name, value in params.items():
+        for name, value in list(params.items()):
             if name in ('key', 'startkey', 'endkey'):
                 value = json.dumps(value)
             elif value is None:
                 continue
-            elif not isinstance(value, basestring):
+            elif not isinstance(value, str):
                 value = json.dumps(value)
             _params[name] = value
     return _params
@@ -166,7 +166,7 @@ def escape_docid(docid):
     
 re_sp = re.compile('\s')
 def encode_attachments(attachments):
-    for k, v in attachments.iteritems():
+    for k, v in attachments.items():
         if v.get('stub', False):
             continue
         else:

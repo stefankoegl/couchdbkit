@@ -28,7 +28,7 @@ class User(Document):
 
     @staticmethod
     def _hash_password(cleartext):
-        if isinstance(cleartext, unicode):
+        if isinstance(cleartext, str):
             password_8bit = cleartext.encode('UTF-8')
         else:
             password_8bit = cleartext
@@ -39,7 +39,7 @@ class User(Document):
         hash.update(password_8bit + salt.hexdigest())
         hashed_password = salt.hexdigest() + hash.hexdigest()
 
-        if not isinstance(hashed_password, unicode):
+        if not isinstance(hashed_password, str):
             hashed_password = hashed_password.decode('UTF-8')
         return hashed_password
 

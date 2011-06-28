@@ -83,7 +83,7 @@ class Options(object):
 
             # Any leftover attributes must be invalid.
             if meta_attrs != {}:
-                raise TypeError("'class Meta' got invalid attribute(s): %s" % ','.join(meta_attrs.keys()))
+                raise TypeError("'class Meta' got invalid attribute(s): %s" % ','.join(list(meta_attrs.keys())))
         else:
             self.verbose_name_plural = string_concat(self.verbose_name, 's')
         del self.meta
@@ -136,9 +136,8 @@ class DocumentMeta(schema.SchemaProperties):
         else:
             setattr(cls, name, value)
 
-class Document(schema.Document):
+class Document(schema.Document, metaclass=DocumentMeta):
     """ Document object for django extension """
-    __metaclass__ = DocumentMeta
     
     get_id = property(lambda self: self['_id'])
     get_rev = property(lambda self: self['_rev'])

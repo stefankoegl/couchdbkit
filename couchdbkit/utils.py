@@ -8,7 +8,7 @@
 Mostly utility functions couchdbkit uses internally that don't
 really belong anywhere else in the modules.
 """
-from __future__ import with_statement
+
 
 import codecs
 import string
@@ -16,7 +16,7 @@ from hashlib import md5
 import os
 import re
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 
 try:
@@ -115,14 +115,14 @@ def split_path(path):
 VALID_DB_NAME = re.compile(r'^[a-z][a-z0-9_$()+-/]*$')
 def validate_dbname(name):
     """ validate dbname """
-    if not VALID_DB_NAME.match(urllib.unquote(name)):
+    if not VALID_DB_NAME.match(urllib.parse.unquote(name)):
         raise ValueError("Invalid db name: '%s'" % name)
 
 def to_bytestring(s):
     """ convert to bytestring an unicode """
-    if not isinstance(s, basestring):
+    if not isinstance(s, str):
         return s
-    if isinstance(s, unicode):
+    if isinstance(s, str):
         return s.encode('utf-8')
     else:
         return s
@@ -186,7 +186,7 @@ def read_json(filename, use_environment=False):
     """
     try:
         data = read_file(filename, force_read=True)
-    except IOError, e:
+    except IOError as e:
         if e[0] == 2:
             return {}
         raise
@@ -197,7 +197,7 @@ def read_json(filename, use_environment=False):
     try:
         data = json.loads(data)
     except ValueError:
-        print >>sys.stderr, "Json is invalid, can't load %s" % filename
+        print("Json is invalid, can't load %s" % filename, file=sys.stderr)
         raise
     return data
 

@@ -26,7 +26,7 @@ class CouchDbKitTestSuiteRunner(DjangoTestSuiteRunner):
         return "%s_test" % dbname
         
     def setup_databases(self, **kwargs):
-        print "overridding the couchdbkit database settings to use a test database!"
+        print("overridding the couchdbkit database settings to use a test database!")
                  
         # first pass: just implement this as a monkey-patch to the loading module
         # overriding all the existing couchdb settings
@@ -39,8 +39,8 @@ class CouchDbKitTestSuiteRunner(DjangoTestSuiteRunner):
         loading.get_db = couchdbkit_handler.get_db
         
         # register our dbs with the extension document classes
-        for app, value in old_handler.app_schema.items():
-            for name, cls in value.items():
+        for app, value in list(old_handler.app_schema.items()):
+            for name, cls in list(value.items()):
                 cls.set_db(loading.get_db(app))
                                 
                 
@@ -58,9 +58,9 @@ class CouchDbKitTestSuiteRunner(DjangoTestSuiteRunner):
             try:
                 db.server.delete_db(db.dbname)
                 deleted_databases.append(db.dbname)
-                print "deleted database %s for %s" % (db.dbname, app_label)
+                print("deleted database %s for %s" % (db.dbname, app_label))
             except ResourceNotFound:
-                print "database %s not found for %s! it was probably already deleted." % (db.dbname, app_label)
+                print("database %s not found for %s! it was probably already deleted." % (db.dbname, app_label))
         if skipcount:
-            print "skipped deleting %s app databases that were already deleted" % skipcount
+            print("skipped deleting %s app databases that were already deleted" % skipcount)
         return super(CouchDbKitTestSuiteRunner, self).teardown_databases(old_config, **kwargs)

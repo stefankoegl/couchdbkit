@@ -1,10 +1,11 @@
+import collections
 # -*- coding: utf-8 -
 #
 # This file is part of couchdbkit released under the MIT license. 
 # See the NOTICE for more information.
 
 def check_callable(cb):
-    if not callable(cb):
+    if not isinstance(cb, collections.Callable):
         raise TypeError("callback isn't a callable")
 
 class ConsumerBase(object):
