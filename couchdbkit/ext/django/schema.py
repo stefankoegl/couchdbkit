@@ -21,7 +21,6 @@ import re
 import sys
 
 from django.conf import settings
-from django.db.models.options import get_verbose_name
 from django.utils.translation import activate, deactivate_all, get_language, \
 string_concat
 from django.utils.encoding import smart_str, force_unicode
@@ -29,6 +28,8 @@ from django.utils.encoding import smart_str, force_unicode
 from couchdbkit import schema
 from couchdbkit.ext.django.loading import get_schema, register_schema, \
 get_db
+
+get_verbose_name = lambda class_name: re.sub('(((?<=[a-z])[A-Z])|([A-Z](?![A-Z]|$)))', ' \\1', class_name).lower().strip()
 
 __all__ = ['Property', 'StringProperty', 'IntegerProperty',
             'DecimalProperty', 'BooleanProperty', 'FloatProperty',
